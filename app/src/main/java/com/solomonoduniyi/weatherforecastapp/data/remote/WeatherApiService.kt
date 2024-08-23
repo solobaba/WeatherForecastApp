@@ -14,7 +14,7 @@ interface WeatherApiService {
 
     @GET("data/2.5/forecast")
     suspend fun getWeatherByCity(
-        @Query("q") cityNamePattern: String,
+        @Query("q") cityName: String,
         @Query("appid") appID: String = Constants.APP_ID
     ): WeatherLocationResponse
 }
