@@ -12,6 +12,6 @@ data class WeatherListDomain(
     val rain: RainDomain?,
     val sys: SysDomain?,
     val visibility: Int?,
-    val weather: List<WeatherDomain?>,
+    val weather: List<WeatherDomain>?,
     val wind: WindDomain?
 )

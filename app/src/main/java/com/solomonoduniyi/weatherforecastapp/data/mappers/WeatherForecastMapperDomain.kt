@@ -29,7 +29,7 @@ class WeatherForecastMapperDomain {
                 city = city?.toCityDomain(),
                 cnt = cnt,
                 cod = cod,
-                list = list.map { it?.toWeatherListDomain() },
+                list = list?.map { it.toWeatherListDomain() },
                 message = message
             )
         }
@@ -58,7 +58,7 @@ class WeatherForecastMapperDomain {
             rain = rain?.toRainDomain(),
             sys = sys?.toSysDomain(),
             visibility = visibility,
-            weather = weather.map { it?.toWeatherDomain() },
+            weather = weather?.map { it.toWeatherDomain() },
             wind = wind?.toWindDomain()
         )
     }

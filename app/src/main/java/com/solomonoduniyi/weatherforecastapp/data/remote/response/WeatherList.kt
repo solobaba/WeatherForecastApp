@@ -24,11 +24,11 @@ data class WeatherList(
     val rain: Rain?,
     val sys: Sys?,
     val visibility: Int?,
-    val weather: List<Weather?>,
+    val weather: List<Weather>?,
     val wind: Wind?
 ): Parcelable {
     fun getWeatherItem(): Weather? {
-        return weather.first()
+        return weather?.first()
     }
 
     @RequiresApi(Build.VERSION_CODES.O)

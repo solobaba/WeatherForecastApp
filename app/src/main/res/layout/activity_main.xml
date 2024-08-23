@@ -7,7 +7,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/white"
-    tools:context=".MainActivity">
+    tools:context=".presentation.screens.MainActivity">
 
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
@@ -128,7 +128,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="24dp"
                         android:text="35°"
-                        android:textColor="@color/whiteWithOpacity"
+                        android:textColor="@color/whiteWithHalfOpacity"
                         android:textSize="27sp"
                         tools:text="35°"
                         app:layout_constraintStart_toStartOf="parent"
@@ -166,6 +166,7 @@
         android:id="@+id/progressBar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:visibility="gone"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
