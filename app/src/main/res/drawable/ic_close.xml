@@ -8,13 +8,13 @@
       android:fillColor="#fff"/>
   <path
       android:pathData="M20.9041,21.532l10.286,10.286"
-      android:strokeWidth="2"
+      android:strokeWidth="5"
       android:fillColor="#00000000"
       android:strokeColor="#ff0090"
       android:strokeLineCap="round"/>
   <path
       android:pathData="M31.189,21.532 L20.903,31.818"
-      android:strokeWidth="2"
+      android:strokeWidth="5"
       android:fillColor="#00000000"
       android:strokeColor="#ff0090"
       android:strokeLineCap="round"/>

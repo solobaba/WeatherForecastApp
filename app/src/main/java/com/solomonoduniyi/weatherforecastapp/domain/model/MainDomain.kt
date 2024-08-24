@@ -1,7 +1,10 @@
 package com.solomonoduniyi.weatherforecastapp.domain.model
 
+import android.os.Parcelable
 import com.squareup.moshi.Json
+import kotlinx.parcelize.Parcelize
 
+@Parcelize
 data class MainDomain(
     @Json(name = "feels_like")
     val feelsLike: Double?,
@@ -18,4 +21,4 @@ data class MainDomain(
     val tempMax: Double?,
     @Json(name = "temp_min")
     val tempMin: Double?
-)
+): Parcelable

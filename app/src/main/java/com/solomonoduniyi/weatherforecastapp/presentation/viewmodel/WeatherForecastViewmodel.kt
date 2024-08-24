@@ -22,9 +22,6 @@ class WeatherForecastViewmodel @Inject constructor(
     private var _isLoadingFlow = MutableStateFlow(false)
     val isLoadingFlow: Flow<Boolean> = _isLoadingFlow
 
-//    private val _observeAllTransaction = MutableStateFlow<GetAllTransactionsResp?>(null)
-//    val observeAllTransaction = _observeAllTransaction.asLiveData()
-
     private val _weatherData = MutableStateFlow<WeatherLocationResponseDomain?>(null)
     val weatherData = _weatherData.asStateFlow()
 
@@ -50,6 +47,32 @@ class WeatherForecastViewmodel @Inject constructor(
                         _isLoadingFlow.value = false
                         result.data.let {
                            _weatherData.value = it
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    fun fetchWeatherByCity(
+        cityName: String
+    ) {
+        viewModelScope.launch {
+            _isLoadingFlow.value = true
+
+            weatherForecastRepository.getWeatherByCity(cityName).collectLatest { result ->
+                when (result) {
+                    is ApiResult.Error -> {
+                        _isLoadingFlow.value = false
+                    }
+                    is ApiResult.Loading -> {
+                        _isLoadingFlow.value = true
+                        result.isLoading
+                    }
+                    is ApiResult.Success -> {
+                        _isLoadingFlow.value = false
+                        result.data.let {
+                            _weatherData.value = it
                         }
                     }
                 }

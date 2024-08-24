@@ -1,5 +1,9 @@
 package com.solomonoduniyi.weatherforecastapp.domain.model
 
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
+
+@Parcelize
 data class CityDomain(
     val coord: CoordDomain?,
     val country: String?,
@@ -9,4 +13,4 @@ data class CityDomain(
     val sunrise: Int?,
     val sunset: Int?,
     val timezone: Int?
-)
+): Parcelable

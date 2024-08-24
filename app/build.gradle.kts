@@ -99,6 +99,9 @@ dependencies {
     implementation("androidx.compose.runtime:runtime-livedata:1.5.3")
     implementation("androidx.lifecycle:lifecycle-livedata-ktx:1.5.3")
 
+    //Picasso
+    implementation("com.squareup.picasso:picasso:2.71828")
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

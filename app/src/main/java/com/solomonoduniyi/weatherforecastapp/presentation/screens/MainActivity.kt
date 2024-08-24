@@ -1,12 +1,19 @@
 package com.solomonoduniyi.weatherforecastapp.presentation.screens
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
+import android.view.View
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.Lifecycle
@@ -14,14 +21,17 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.solomonoduniyi.weatherforecastapp.R
+import com.solomonoduniyi.weatherforecastapp.data.remote.Constants
 import com.solomonoduniyi.weatherforecastapp.databinding.ActivityMainBinding
 import com.solomonoduniyi.weatherforecastapp.domain.model.WeatherListDomain
 import com.solomonoduniyi.weatherforecastapp.domain.model.WeatherLocationResponseDomain
 import com.solomonoduniyi.weatherforecastapp.presentation.adapter.WeatherForecastAdapter
 import com.solomonoduniyi.weatherforecastapp.presentation.viewmodel.WeatherForecastViewmodel
 import com.solomonoduniyi.weatherforecastapp.utils.extension.GpsTracker
+import com.solomonoduniyi.weatherforecastapp.utils.extension.getDateTime
 import com.solomonoduniyi.weatherforecastapp.utils.extension.logTrace
-import com.solomonoduniyi.weatherforecastapp.utils.extension.shortToast
+import com.squareup.picasso.NetworkPolicy
+import com.squareup.picasso.Picasso
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -32,11 +42,13 @@ class MainActivity : AppCompatActivity() {
     private val viewmodel: WeatherForecastViewmodel by viewModels()
     private lateinit var binding: ActivityMainBinding
     private lateinit var weatherForecastAdapter: WeatherForecastAdapter
-    private var layoutManager: LinearLayoutManager? = null
     private var gpsTracker: GpsTracker? = null
     var latitude: Double? = 0.0
     var longitude: Double? = 0.0
+    private var city: String? = ""
+    private var country: String? = ""
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -53,19 +65,12 @@ class MainActivity : AppCompatActivity() {
         weatherForecastAdapter = WeatherForecastAdapter(this,
             object : WeatherForecastAdapter.OnWeatherListListener {
                 override fun onWeatherListener(weatherListData: WeatherListDomain) {
-                    shortToast("Getting here")
+                    launchWeatherDetailsScreen(weatherListData)
                 }
             })
         binding.recyclerForecast.adapter = weatherForecastAdapter
 
-//        layoutManager = LinearLayoutManager(this)
-//        binding.recyclerForecast.apply {
-//            itemAnimator = null
-//            adapter = weatherForecastAdapter
-//        }
-
         getUserLocation()
-
         initView()
     }
 
@@ -87,17 +92,20 @@ class MainActivity : AppCompatActivity() {
         if (gpsTracker?.canGetLocation() == true) {
             latitude = gpsTracker?.userLatitude
             longitude = gpsTracker?.userLongitude
-            shortToast("Latitude $latitude")
-            shortToast("Longtitude $longitude")
         } else {
             gpsTracker?.showSettingsAlert()
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     private fun initView() {
+        binding.progressBar.visibility = View.VISIBLE
+
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewmodel.fetchWeather(latitude ?: 0.0, longitude ?: 0.0)
+                binding.progressBar.visibility = View.GONE
+
                 viewmodel.weatherData.collectLatest { response ->
                     response?.list.let { weatherList ->
                         weatherForecastAdapter.setTransaction(weatherList)
@@ -108,19 +116,126 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
+
+        binding.searchBarEdittext.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
+            }
+
+            override fun onTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
+            }
+
+            override fun afterTextChanged(cityName: Editable?) {
+                try {
+                    searchFilter(cityName.toString())
+                } catch (e: Throwable) {
+                    e.printStackTrace()
+                }
+            }
+        })
     }
 
-    @SuppressLint("SetTextI18n")
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun searchFilter(cityName: String) {
+        lifecycleScope.launch {
+            viewmodel.fetchWeatherByCity(cityName)
+            viewmodel.weatherData.collectLatest { cityResponse ->
+                cityResponse?.list.let { cityWeatherList ->
+                    weatherForecastAdapter.setTransaction(cityWeatherList)
+                }
+                setCurrentWeather(cityResponse)
+            }
+        }
+    }
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    @SuppressLint("SetTextI18n", "UseCompatLoadingForDrawables")
     private fun setCurrentWeather(response: WeatherLocationResponseDomain?) {
         var position = 0
-        val city = response?.city?.name
-        val country = response?.city?.country
+        val iconName = response?.list?.get(position)?.weather?.get(0)?.icon
+
+        if (response?.list?.get(position)?.dt?.let {
+                getDateTime(it)!!.name == "MONDAY"} == true) {
+            binding.containerForecastBgd.setBackgroundColor(
+                ContextCompat.getColor(
+                    this,
+                    R.color.monday_color
+                )
+            )
+        } else if (response?.list?.get(position)?.dt?.let {
+                getDateTime(it)!!.name == "TUESDAY"} == true) {
+            binding.containerForecastBgd.setBackgroundColor(
+                ContextCompat.getColor(
+                    this,
+                    R.color.tuesday_color
+                )
+            )
+        } else if (response?.list?.get(position)?.dt?.let {
+                getDateTime(it)!!.name == "WEDNESDAY"} == true) {
+            binding.containerForecastBgd.setBackgroundColor(
+                ContextCompat.getColor(
+                    this,
+                    R.color.wednesday_color
+                )
+            )
+        } else if (response?.list?.get(position)?.dt?.let {
+                getDateTime(it)!!.name == "THURSDAY"} == true) {
+            binding.containerForecastBgd.setBackgroundColor(
+                ContextCompat.getColor(
+                    this,
+                    R.color.thursday_color
+                )
+            )
+        } else if (response?.list?.get(position)?.dt?.let {
+                getDateTime(it)!!.name == "FRIDAY"} == true) {
+            binding.containerForecastBgd.setBackgroundColor(
+                ContextCompat.getColor(
+                    this,
+                    R.color.friday_color
+                )
+            )
+        } else if (response?.list?.get(position)?.dt?.let {
+                getDateTime(it)!!.name == "SATURDAY"} == true) {
+            binding.containerForecastBgd.setBackgroundColor(
+                ContextCompat.getColor(
+                    this,
+                    R.color.mainTextColor
+                )
+            )
+        } else if (response?.list?.get(position)?.dt?.let {
+                getDateTime(it)!!.name == "SUNDAY"} == true) {
+            binding.containerForecastBgd.setBackgroundColor(
+                ContextCompat.getColor(
+                    this,
+                    R.color.sunday_color
+                )
+            )
+        }
+        else {
+            binding.containerForecastBgd.setBackgroundColor(ContextCompat.getColor(this, R.color.white))
+        }
+
+        city = response?.city?.name
+        country = response?.city?.country
         binding.cityName.text = "$city, $country"
+        Picasso.get().load("https://openweathermap.org/img/wn/$iconName@2x.png")
+            .placeholder(this.resources.getDrawable(R.drawable.a10d_svg))
+            .networkPolicy(NetworkPolicy.OFFLINE)
+            .into(binding.weatherIcon)
         binding.textViewTemperature.text =
             response?.list?.get(position)?.main?.temp.toString().substringBefore(".") + "°"
         binding.textViewWeatherMain.text =
             response?.list?.get(position)?.weather?.get(position)?.main
         binding.textViewHumidity.text =
             response?.list?.get(position)?.main?.humidity.toString() + "°"
+    }
+
+    private fun launchWeatherDetailsScreen(weatherListData: WeatherListDomain) {
+        val intent = Intent(this, WeatherForecastDetails::class.java).apply {
+            putExtra(Constants.WEATHER_DETAILS, weatherListData)
+            putExtra(Constants.CITY, city)
+            putExtra(Constants.COUNTRY, country)
+        }
+        startActivity(intent)
+
     }
 }

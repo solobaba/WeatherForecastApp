@@ -1,7 +1,10 @@
 package com.solomonoduniyi.weatherforecastapp.domain.model
 
+import android.os.Parcelable
 import com.squareup.moshi.Json
+import kotlinx.parcelize.Parcelize
 
+@Parcelize
 data class WeatherListDomain(
     val clouds: CloudsDomain?,
     val dt: Long?,
@@ -14,4 +17,4 @@ data class WeatherListDomain(
     val visibility: Int?,
     val weather: List<WeatherDomain>?,
     val wind: WindDomain?
-)
+): Parcelable
