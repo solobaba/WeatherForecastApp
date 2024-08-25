@@ -1,5 +1,8 @@
 package com.solomonoduniyi.weatherforecastapp.data.mappers
 
+import com.solomonoduniyi.weatherforecastapp.data.local.entity.CityEntity
+import com.solomonoduniyi.weatherforecastapp.data.local.entity.CoordEntity
+import com.solomonoduniyi.weatherforecastapp.data.local.entity.WeatherLocationEntity
 import com.solomonoduniyi.weatherforecastapp.data.remote.response.City
 import com.solomonoduniyi.weatherforecastapp.data.remote.response.Clouds
 import com.solomonoduniyi.weatherforecastapp.data.remote.response.Coord
@@ -21,62 +24,62 @@ import com.solomonoduniyi.weatherforecastapp.domain.model.WeatherListDomain
 import com.solomonoduniyi.weatherforecastapp.domain.model.WeatherLocationResponseDomain
 import com.solomonoduniyi.weatherforecastapp.domain.model.WindDomain
 
-class WeatherForecastMapper {
-    fun mapToDomain(weatherLocationResponseDomain: WeatherLocationResponseDomain?) : WeatherLocationResponse? {
-        if (weatherLocationResponseDomain == null) return null
-        return with(weatherLocationResponseDomain) {
-            WeatherLocationResponse(
-                city = city?.toCityDomain(),
+class WeatherForecastMapperData {
+    fun mapDataToEntity(weatherLocationResponse: WeatherLocationResponse?) : WeatherLocationEntity? {
+        if (weatherLocationResponse == null) return null
+        return with(weatherLocationResponse) {
+            WeatherLocationEntity(
+                city = city?.toCityEntity(),
                 cnt = cnt,
                 cod = cod,
-                list = list?.map { it.toWeatherListDomain() },
+                list = list?.map { it.toWeatherList() },
                 message = message
             )
         }
     }
 
-    fun CityDomain.toCityDomain() : City {
-        return City(
-            coord = coord?.toCoordDomain(),
-            country = country,
-            id = id,
-            name = name,
-            population = population,
-            sunrise = sunrise,
-            sunset = sunset,
-            timezone = timezone
+    fun City.toCityEntity() : CityEntity {
+        return CityEntity(
+            cityCoord = coord?.toCoord(),
+            cityCountry = country,
+            cityId = id,
+            cityName = name,
+            cityPopulation = population,
+            citySunrise = sunrise,
+            citySunset = sunset,
+            cityTimezone = timezone
         )
     }
 
-    fun WeatherListDomain.toWeatherListDomain() : WeatherList {
+    fun WeatherList.toWeatherList() : WeatherList {
         return WeatherList(
-            clouds = clouds?.toCloudsDomain(),
+            clouds = clouds?.toClouds(),
             dt = dt,
             dtTxt = dtTxt,
-            main = main?.toMainDomain(),
+            main = main?.toMain(),
             pop = pop,
-            rain = rain?.toRainDomain(),
-            sys = sys?.toSysDomain(),
+            rain = rain?.toRain(),
+            sys = sys?.toSys(),
             visibility = visibility,
-            weather = weather?.map { it.toWeatherDomain() },
-            wind = wind?.toWindDomain()
+            weather = weather?.map { it.toWeather() },
+            wind = wind?.toWind()
         )
     }
 
-    fun CoordDomain.toCoordDomain() : Coord {
-        return Coord(
+    fun Coord.toCoord() : CoordEntity {
+        return CoordEntity(
             lat = lat,
             lon = lon
         )
     }
 
-    fun CloudsDomain.toCloudsDomain() : Clouds {
+    fun Clouds.toClouds() : Clouds {
         return Clouds(
             all = all
         )
     }
 
-    fun MainDomain.toMainDomain() : Main {
+    fun Main.toMain() : Main {
         return Main(
             feelsLike = feelsLike,
             grndLevel = grndLevel,
@@ -90,19 +93,19 @@ class WeatherForecastMapper {
         )
     }
 
-    fun RainDomain.toRainDomain() : Rain {
+    fun Rain.toRain() : Rain {
         return Rain(
             jsonMember3h = jsonMember3h
         )
     }
 
-    fun SysDomain.toSysDomain() : Sys {
+    fun Sys.toSys() : Sys {
         return Sys(
             pod = pod
         )
     }
 
-    fun WeatherDomain.toWeatherDomain() : Weather {
+    fun Weather.toWeather() : Weather {
         return Weather(
             description = description,
             icon = icon,
@@ -111,7 +114,7 @@ class WeatherForecastMapper {
         )
     }
 
-    fun WindDomain.toWindDomain() : Wind {
+    fun Wind.toWind() : Wind {
         return Wind(
             deg = deg,
             gust = gust,

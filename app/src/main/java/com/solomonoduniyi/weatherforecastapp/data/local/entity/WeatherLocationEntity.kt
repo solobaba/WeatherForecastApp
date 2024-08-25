@@ -23,7 +23,7 @@ data class WeatherLocationEntity(
     @ColumnInfo(name = "cod")
     val cod: String?,
     @ColumnInfo(name = "list")
-    val list: List<WeatherList?>?,
+    val list: List<WeatherList>?,
     @ColumnInfo(name = "message")
     val message: Int?
 ): Parcelable {

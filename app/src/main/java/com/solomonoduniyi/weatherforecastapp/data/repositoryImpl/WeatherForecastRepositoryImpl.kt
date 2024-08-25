@@ -1,6 +1,8 @@
 package com.solomonoduniyi.weatherforecastapp.data.repositoryImpl
 
-import com.solomonoduniyi.weatherforecastapp.data.mappers.WeatherForecastMapper
+import com.solomonoduniyi.weatherforecastapp.data.local.WeatherAppDatabase
+import com.solomonoduniyi.weatherforecastapp.data.mappers.WeatherForecastEntityMapper
+import com.solomonoduniyi.weatherforecastapp.data.mappers.WeatherForecastMapperData
 import com.solomonoduniyi.weatherforecastapp.data.mappers.WeatherForecastMapperDomain
 import com.solomonoduniyi.weatherforecastapp.data.remote.WeatherApiService
 import com.solomonoduniyi.weatherforecastapp.domain.model.WeatherLocationResponseDomain
@@ -14,10 +16,12 @@ import javax.inject.Inject
 
 class WeatherForecastRepositoryImpl @Inject constructor(
     private val weatherApiService: WeatherApiService,
+    private val weatherAppDatabase: WeatherAppDatabase
 ): WeatherForecastRepository {
 
-    private val weatherForecastMapper: WeatherForecastMapper = WeatherForecastMapper()
+    private val weatherForecastEntityMapper: WeatherForecastEntityMapper = WeatherForecastEntityMapper()
     private val weatherForecastMapperDomain : WeatherForecastMapperDomain = WeatherForecastMapperDomain()
+    private val weatherForecastMapperData: WeatherForecastMapperData = WeatherForecastMapperData()
 
     override suspend fun getWeatherForecast(
         latitude: Double,
@@ -25,6 +29,21 @@ class WeatherForecastRepositoryImpl @Inject constructor(
     ): Flow<ApiResult<WeatherLocationResponseDomain>> {
         return flow {
             emit(ApiResult.Loading(true))
+
+            val localWeatherForecast = weatherAppDatabase.forecastDao.getWeatherForecast()
+
+            val shouldLoadLocalWeather = localWeatherForecast.list?.isNotEmpty()
+
+            if (shouldLoadLocalWeather == true) {
+                emit(ApiResult.Success(
+                    data = localWeatherForecast.let { weatherForecastEntity ->
+                        weatherForecastEntityMapper.mapToWeatherLocationEntity(weatherForecastEntity)
+                    }
+                ))
+
+                emit(ApiResult.Loading(false))
+                return@flow
+            }
 
             val getCurrentWeatherForecast = try {
                 weatherApiService.getWeatherForecast(latitude, longitude)
@@ -41,9 +60,21 @@ class WeatherForecastRepositoryImpl @Inject constructor(
                 return@flow
             }
 
+            val weatherForecastEntities = getCurrentWeatherForecast.let { weatherForecastResponse ->
+                weatherForecastMapperData.mapDataToEntity(weatherForecastResponse)
+            }
+
+            weatherForecastEntities?.let { weatherAppDatabase.forecastDao.upsertWeatherForecast(it) }
+
             emit(ApiResult.Success(
-                weatherForecastMapperDomain.mapDataToDomain(getCurrentWeatherForecast)
+                weatherForecastEntities.let {
+                    weatherForecastEntityMapper.mapToWeatherLocationEntity(it)
+                }
             ))
+
+//            emit(ApiResult.Success(
+//                weatherForecastMapperDomain.mapDataToDomain(getCurrentWeatherForecast)
+//            ))
             emit(ApiResult.Loading(false))
         }
     }

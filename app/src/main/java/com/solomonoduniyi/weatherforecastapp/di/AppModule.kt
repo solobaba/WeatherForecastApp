@@ -26,7 +26,7 @@ class AppModule {
 
     private fun provideMoshi(): Moshi {
         synchronized(this) {
-            return moshi ?: Moshi.Builder().add(KotlinJsonAdapterFactory()).build()
+            return moshi ?: Moshi.Builder().addLast(KotlinJsonAdapterFactory()).build()
         }
     }
 
