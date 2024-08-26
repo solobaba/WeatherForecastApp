@@ -1,9 +1,13 @@
 package com.solomonoduniyi.weatherforecastapp.utils.extension
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
+import android.content.Context.INPUT_METHOD_SERVICE
 import android.os.Build
 import android.util.Log
+import android.view.View
+import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.fragment.app.Fragment
@@ -37,6 +41,7 @@ fun Context.shortToast(msg: String) {
     }
 }
 
+@SuppressLint("SimpleDateFormat")
 @RequiresApi(Build.VERSION_CODES.O)
 fun getDateTime(s: Long): DayOfWeek? {
     return try {
@@ -54,4 +59,10 @@ fun getDateTime(s: Long): DayOfWeek? {
         e.printStackTrace()
         DayOfWeek.MONDAY
     }
+}
+
+fun View.hideKeyboard() {
+    val inputMethodManager: InputMethodManager =
+        this.context.getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
+    inputMethodManager.hideSoftInputFromWindow(this.windowToken, 0)
 }

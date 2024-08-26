@@ -16,6 +16,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.isVisible
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -29,6 +30,7 @@ import com.solomonoduniyi.weatherforecastapp.presentation.adapter.WeatherForecas
 import com.solomonoduniyi.weatherforecastapp.presentation.viewmodel.WeatherForecastViewmodel
 import com.solomonoduniyi.weatherforecastapp.utils.extension.GpsTracker
 import com.solomonoduniyi.weatherforecastapp.utils.extension.getDateTime
+import com.solomonoduniyi.weatherforecastapp.utils.extension.hideKeyboard
 import com.solomonoduniyi.weatherforecastapp.utils.extension.logTrace
 import com.squareup.picasso.NetworkPolicy
 import com.squareup.picasso.Picasso
@@ -99,13 +101,18 @@ class MainActivity : AppCompatActivity() {
 
     @RequiresApi(Build.VERSION_CODES.O)
     private fun initView() {
-        binding.progressBar.visibility = View.VISIBLE
+
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewmodel.isLoadingFlow.collect{ isLoading ->
+                    showLoading(isLoading)
+                }
+            }
+        }
 
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewmodel.fetchWeather(latitude ?: 0.0, longitude ?: 0.0)
-                binding.progressBar.visibility = View.GONE
-
                 viewmodel.weatherData.collectLatest { response ->
                     response?.list.let { weatherList ->
                         weatherForecastAdapter.setTransaction(weatherList)
@@ -136,6 +143,14 @@ class MainActivity : AppCompatActivity() {
 
     @RequiresApi(Build.VERSION_CODES.O)
     private fun searchFilter(cityName: String) {
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewmodel.isLoadingFlow.collect{ isLoading ->
+                    showLoading(isLoading)
+                }
+            }
+        }
+
         lifecycleScope.launch {
             viewmodel.fetchWeatherByCity(cityName)
             viewmodel.weatherData.collectLatest { cityResponse ->
@@ -237,5 +252,9 @@ class MainActivity : AppCompatActivity() {
         }
         startActivity(intent)
 
+    }
+
+    private fun showLoading(isEnabled: Boolean) {
+        binding.progressBar.isVisible = isEnabled
     }
 }

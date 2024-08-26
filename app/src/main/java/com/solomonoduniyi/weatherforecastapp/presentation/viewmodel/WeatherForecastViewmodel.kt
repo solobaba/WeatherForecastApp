@@ -30,21 +30,20 @@ class WeatherForecastViewmodel @Inject constructor(
         longtitude: Double
     ) {
         viewModelScope.launch {
-            _isLoadingFlow.value = true
+            _isLoadingFlow.tryEmit(true)
 
             weatherForecastRepository.getWeatherForecast(
                 latitude, longtitude
             ).collectLatest { result ->
                 when (result) {
                     is ApiResult.Error -> {
-                        _isLoadingFlow.value = false
+                        _isLoadingFlow.tryEmit(false)
                     }
                     is ApiResult.Loading -> {
-                        _isLoadingFlow.value = true
                         result.isLoading
                     }
                     is ApiResult.Success -> {
-                        _isLoadingFlow.value = false
+                        _isLoadingFlow.tryEmit(false)
                         result.data.let {
                            _weatherData.value = it
                         }
@@ -58,19 +57,18 @@ class WeatherForecastViewmodel @Inject constructor(
         cityName: String
     ) {
         viewModelScope.launch {
-            _isLoadingFlow.value = true
+            _isLoadingFlow.tryEmit(true)
 
             weatherForecastRepository.getWeatherByCity(cityName).collectLatest { result ->
                 when (result) {
                     is ApiResult.Error -> {
-                        _isLoadingFlow.value = false
+                        _isLoadingFlow.tryEmit(false)
                     }
                     is ApiResult.Loading -> {
-                        _isLoadingFlow.value = true
                         result.isLoading
                     }
                     is ApiResult.Success -> {
-                        _isLoadingFlow.value = false
+                        _isLoadingFlow.tryEmit(false)
                         result.data.let {
                             _weatherData.value = it
                         }
