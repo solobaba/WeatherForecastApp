@@ -32,9 +32,9 @@ class WeatherForecastRepositoryImpl @Inject constructor(
 
             val localWeatherForecast = weatherAppDatabase.forecastDao.getWeatherForecast()
 
-            val shouldLoadLocalWeather = localWeatherForecast.list?.isNotEmpty()
+            val shouldLoadLocalWeather = localWeatherForecast // .list?.isNotEmpty()
 
-            if (shouldLoadLocalWeather == true) {
+            if (shouldLoadLocalWeather?.list?.isNotEmpty() == true) {
                 emit(ApiResult.Success(
                     data = localWeatherForecast.let { weatherForecastEntity ->
                         weatherForecastEntityMapper.mapToWeatherLocationEntity(weatherForecastEntity)

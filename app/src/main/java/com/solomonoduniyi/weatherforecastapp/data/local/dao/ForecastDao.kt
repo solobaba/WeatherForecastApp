@@ -13,7 +13,7 @@ interface ForecastDao {
     suspend fun upsertWeatherForecast(weatherLocationEntity: WeatherLocationEntity)
 
     @Query("SELECT * FROM Forecast")
-    suspend fun getWeatherForecast(): WeatherLocationEntity
+    suspend fun getWeatherForecast(): WeatherLocationEntity?
 
     @Query("SELECT * FROM Forecast ORDER BY abs(:lat) AND abs(:lon) LIMIT 1")
     fun getForecastByCoord(lat: Double, lon: Double): LiveData<WeatherLocationEntity>
