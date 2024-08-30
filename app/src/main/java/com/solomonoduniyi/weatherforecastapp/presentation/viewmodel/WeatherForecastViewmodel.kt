@@ -1,5 +1,6 @@
 package com.solomonoduniyi.weatherforecastapp.presentation.viewmodel
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
@@ -26,6 +27,7 @@ class WeatherForecastViewmodel @Inject constructor(
     val weatherData = _weatherData.asStateFlow()
 
     fun fetchWeather(
+        context: Context,
         latitude: Double,
         longtitude: Double
     ) {
@@ -33,7 +35,7 @@ class WeatherForecastViewmodel @Inject constructor(
             _isLoadingFlow.tryEmit(true)
 
             weatherForecastRepository.getWeatherForecast(
-                latitude, longtitude
+                context, latitude, longtitude
             ).collectLatest { result ->
                 when (result) {
                     is ApiResult.Error -> {

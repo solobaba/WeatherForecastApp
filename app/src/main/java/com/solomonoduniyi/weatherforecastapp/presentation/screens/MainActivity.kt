@@ -3,6 +3,7 @@ package com.solomonoduniyi.weatherforecastapp.presentation.screens
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
 import android.text.Editable
@@ -57,7 +58,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         enableEdgeToEdge()
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.mainRefreshLayout)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
@@ -74,6 +75,11 @@ class MainActivity : AppCompatActivity() {
 
         getUserLocation()
         initView()
+
+        binding.mainRefreshLayout.setColorSchemeColors(Color.RED, Color.GREEN, Color.BLUE, Color.YELLOW)
+        binding.mainRefreshLayout.setOnRefreshListener {
+            initView()
+        }
     }
 
     private fun getUserLocation() {
@@ -101,7 +107,6 @@ class MainActivity : AppCompatActivity() {
 
     @RequiresApi(Build.VERSION_CODES.O)
     private fun initView() {
-
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewmodel.isLoadingFlow.collect{ isLoading ->
@@ -112,7 +117,10 @@ class MainActivity : AppCompatActivity() {
 
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewmodel.fetchWeather(latitude ?: 0.0, longitude ?: 0.0)
+                viewmodel.fetchWeather(this@MainActivity,
+                    latitude=  latitude ?: 0.0,
+                    longtitude = longitude ?: 0.0
+                )
                 viewmodel.weatherData.collectLatest { response ->
                     response?.list.let { weatherList ->
                         weatherForecastAdapter.setTransaction(weatherList)
@@ -165,6 +173,7 @@ class MainActivity : AppCompatActivity() {
     @RequiresApi(Build.VERSION_CODES.O)
     @SuppressLint("SetTextI18n", "UseCompatLoadingForDrawables")
     private fun setCurrentWeather(response: WeatherLocationResponseDomain?) {
+        binding.mainRefreshLayout.isRefreshing = false
         var position = 0
         val iconName = response?.list?.get(position)?.weather?.get(0)?.icon
 

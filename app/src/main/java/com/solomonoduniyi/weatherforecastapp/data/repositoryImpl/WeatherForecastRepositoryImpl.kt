@@ -1,5 +1,6 @@
 package com.solomonoduniyi.weatherforecastapp.data.repositoryImpl
 
+import android.content.Context
 import com.solomonoduniyi.weatherforecastapp.data.local.WeatherAppDatabase
 import com.solomonoduniyi.weatherforecastapp.data.mappers.WeatherForecastEntityMapper
 import com.solomonoduniyi.weatherforecastapp.data.mappers.WeatherForecastMapperData
@@ -8,6 +9,7 @@ import com.solomonoduniyi.weatherforecastapp.data.remote.WeatherApiService
 import com.solomonoduniyi.weatherforecastapp.domain.model.WeatherLocationResponseDomain
 import com.solomonoduniyi.weatherforecastapp.domain.repository.WeatherForecastRepository
 import com.solomonoduniyi.weatherforecastapp.utils.ApiResult
+import com.solomonoduniyi.weatherforecastapp.utils.NetworkUtils
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import retrofit2.HttpException
@@ -24,6 +26,7 @@ class WeatherForecastRepositoryImpl @Inject constructor(
     private val weatherForecastMapperData: WeatherForecastMapperData = WeatherForecastMapperData()
 
     override suspend fun getWeatherForecast(
+        context: Context,
         latitude: Double,
         longitude: Double
     ): Flow<ApiResult<WeatherLocationResponseDomain>> {
@@ -32,9 +35,9 @@ class WeatherForecastRepositoryImpl @Inject constructor(
 
             val localWeatherForecast = weatherAppDatabase.forecastDao.getWeatherForecast()
 
-            val shouldLoadLocalWeather = localWeatherForecast // .list?.isNotEmpty()
+            val shouldLoadLocalWeather = localWeatherForecast?.list?.isNotEmpty() == true && !NetworkUtils.isNetworkAvailable(context)
 
-            if (shouldLoadLocalWeather?.list?.isNotEmpty() == true) {
+            if (shouldLoadLocalWeather) {
                 emit(ApiResult.Success(
                     data = localWeatherForecast.let { weatherForecastEntity ->
                         weatherForecastEntityMapper.mapToWeatherLocationEntity(weatherForecastEntity)
